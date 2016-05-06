@@ -25,11 +25,11 @@
             </TabItem>
         </TabControl>
         <Button x:Name="StopSoundButton" Content="Stop Sounds" HorizontalAlignment="Right" Margin="0,0,10.2,31.4" VerticalAlignment="Bottom" Width="180" Height="80" Grid.Column="1" Click="StopSoundButton_Click"/>
-        <ComboBox x:Name="primaryDeviceCombo" HorizontalAlignment="Right" Margin="0,49,10.2,0" VerticalAlignment="Top" Width="180" Grid.Column="1" SelectionChanged="DeviceComboChanged"/>
+        <ComboBox x:Name="primaryDeviceCombo" HorizontalAlignment="Right" Margin="0,49,10.2,0" VerticalAlignment="Top" Width="180" Grid.Column="1" DropDownClosed="DeviceComboChanged"/>
         <Label x:Name="label" Content="Primary Audio Device:" Margin="0,23,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1" Width="173"/>
-        <ComboBox x:Name="secondaryDeviceCombo" HorizontalAlignment="Right" Margin="0,107,10.2,0" VerticalAlignment="Top" Width="180" Grid.Column="1" SelectionChanged="DeviceComboChanged"/>
+        <ComboBox x:Name="secondaryDeviceCombo" HorizontalAlignment="Right" Margin="0,107,10.2,0" VerticalAlignment="Top" Width="180" Grid.Column="1" DropDownClosed="DeviceComboChanged"/>
         <Label x:Name="label_Copy" Content="Secondary Audio Device:" Margin="0,80,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1" Width="173"/>
-        <local:KeyBinderBox x:Name="StopKeybindBox" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10.2,10.4" VerticalAlignment="Bottom" Width="180" GlobalKeybindPressed="StopKeybindBox_GlobalKeybindPressed"/>
+        <local:KeyBinderBox x:Name="StopKeybindBox" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,10.2,10.4" VerticalAlignment="Bottom" Width="180" GlobalKeybindPressed="StopKeybindBox_GlobalKeybindPressed" KeybindSet="StopKeybindBox_KeybindSet"/>
 
 
         <GroupBox x:Name="groupBox" Grid.Column="1" Header="Push to talk" HorizontalAlignment="Right" Margin="0,150,10,0" VerticalAlignment="Top" Height="152" Width="180">
@@ -37,7 +37,7 @@
                 <CheckBox x:Name="PTTCheckBox" Content="Enabled" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,10,0,0" Width="168"/>
                 <CheckBox x:Name="PTTFocusCheckBox" Content="Focus Window" VerticalAlignment="Top" Margin="0,77,0,0"/>
                 <ComboBox x:Name="windowCombo" Margin="0,104,0,0" VerticalAlignment="Top" DropDownOpened="windowCombo_DropDownOpened"/>
-                <local:KeyBinderBox x:Name="pttKeybindBox" HorizontalAlignment="Right" Margin="48,34,0,0" VerticalAlignment="Top" Height="22"/>
+                <local:KeyBinderBox x:Name="pttKeybindBox" HorizontalAlignment="Right" Margin="48,34,0,0" VerticalAlignment="Top" Height="22" KeybindSet="pttKeybindBox_KeybindSet"/>
                 <Label x:Name="label2" Content="Key:" HorizontalAlignment="Left" Margin="0,34,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>

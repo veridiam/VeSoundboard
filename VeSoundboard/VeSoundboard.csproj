@@ -69,6 +69,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Hotkey.cs" />
     <Compile Include="KeyBinderBox.xaml.cs">
       <DependentUpon>KeyBinderBox.xaml</DependentUpon>
     </Compile>

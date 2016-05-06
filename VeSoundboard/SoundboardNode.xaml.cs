@@ -47,7 +47,7 @@ namespace VeSoundboard
         private void OnMouseLeave(object sender, MouseEventArgs e)
         {
             TopControls.OpacityMask = Brushes.Transparent;
-            if (KeybindBox.key == Keys.None && !KeybindBox.isSetting)
+            if (KeybindBox.hotkey.key == Keys.None && !KeybindBox.isSetting)
                 BottomControls.OpacityMask = Brushes.Transparent;
         }
 
@@ -62,7 +62,7 @@ namespace VeSoundboard
 
         private void DeleteButton(object sender, RoutedEventArgs e)
         {
-            KeybindBox.SetHotkey(ModifierKeys.None, Keys.None);
+            KeybindBox.SetHotkey(new Hotkey());
             KeybindBox.UnregisterGlobalHotkey();
             if (Parent == null) return;
             Panel p = (Panel)Parent;

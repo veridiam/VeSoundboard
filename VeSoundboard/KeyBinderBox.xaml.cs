@@ -23,8 +23,7 @@ namespace VeSoundboard
     public partial class KeyBinderBox : UserControl
     {
         public bool globalKeybind = false;
-        public ModifierKeys modifiers;
-        public Keys key;
+        public Hotkey hotkey { get; private set; }
         
         public bool isSetting { get; private set; } = false;
 
@@ -45,11 +44,12 @@ namespace VeSoundboard
         public KeyBinderBox()
         {
             InitializeComponent();
+            hotkey = new Hotkey();
         }
 
         public bool GetIsBound()
         {
-            return (key != Keys.None);
+            return (hotkey.key != Keys.None);
         }
 
         private void baseTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -81,47 +81,56 @@ namespace VeSoundboard
                         break;
                     case Key.Back:
                     case Key.Escape:
-                        SetHotkey(ModifierKeys.None, Keys.None);
+                        SetHotkey(new Hotkey());
                         break;
                     default:
-                        SetHotkey(Keyboard.Modifiers, (Keys)KeyInterop.VirtualKeyFromKey(e.Key));
+                        SetHotkey(new Hotkey(Keyboard.Modifiers, (Keys)KeyInterop.VirtualKeyFromKey(e.Key)));
                         break;
                 }
             }
         }
 
-        public void SetHotkey(ModifierKeys mods, Keys key)
+        public void SetHotkey(Hotkey hk)
         {
             // Set keybinding
-            this.modifiers = mods;
-            this.key = key;
+            hotkey = hk;
+            Console.WriteLine("Set keybind to " + hk.modifiers.ToString() + " " + hk.key.ToString());
 
-            Console.WriteLine("Set keybind to " + modifiers.ToString() + " " + key.ToString());
-            
-            string keyString = "<";
-            if (key == Keys.None)
+            // Global keybind
+            if (globalKeybind)
             {
-                if (globalKeybind)
+                if (hotkey.key == Keys.None)
+                {
                     UnregisterGlobalHotkey();
-                keyString += "No Key";
-            }
-            else
-            {
-                if (globalKeybind)
+                } else
+                {
                     RegisterGlobalHotkey();
-                if (modifiers != ModifierKeys.None)
-                    keyString += modifiers.ToString() + " ";
-
-                keyString += key.ToString();
+                }
             }
-            keyString += ">";
-            baseTextBox.Text = keyString;
 
+            SetText();
             SetKeysetMode(false);
 
             // Call event
             if (KeybindSet != null)
                 KeybindSet.Invoke();
+        }
+
+        protected void SetText()
+        {
+            string keyString = "<";
+            if (hotkey.key == Keys.None)
+            {
+                keyString += "No Key";
+            }
+            else
+            {
+                if (hotkey.modifiers != ModifierKeys.None)
+                    keyString += hotkey.modifiers.ToString() + " ";
+                keyString += hotkey.key.ToString();
+            }
+            keyString += ">";
+            baseTextBox.Text = keyString;
         }
 
         protected void SetKeysetMode(bool enabled)
@@ -142,7 +151,7 @@ namespace VeSoundboard
         {
             UnregisterGlobalHotkey();
             var helper = new WindowInteropHelper(Window.GetWindow(this));
-            RegisterHotKey(helper.Handle, HOTKEY_ID, (uint)modifiers, (uint)key);
+            RegisterHotKey(helper.Handle, HOTKEY_ID, (uint)hotkey.modifiers, (uint)hotkey.key);
         }
 
         public void UnregisterGlobalHotkey()

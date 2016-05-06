@@ -40,15 +40,17 @@ namespace VeSoundboard
         {
             primaryDeviceCombo.ItemsSource = DirectSoundOut.Devices;
             primaryDeviceCombo.DisplayMemberPath = "Description";
-            primaryDeviceCombo.SelectedIndex = 0;
-
+            primaryDeviceCombo.SelectedIndex = Properties.Settings.Default.PrimaryDevice;
             secondaryDeviceCombo.ItemsSource = DirectSoundOut.Devices;
             secondaryDeviceCombo.DisplayMemberPath = "Description";
-            secondaryDeviceCombo.SelectedIndex = 0;
-
+            secondaryDeviceCombo.SelectedIndex = Properties.Settings.Default.SecondaryDevice;
             ChangeAudioDevices();
+
             windowCombo.ItemsSource = GetWindowProcesses();
             windowCombo.DisplayMemberPath = "MainWindowTitle";
+
+            pttKeybindBox.SetHotkey(Properties.Settings.Default.PTTHotkey);
+            StopKeybindBox.SetHotkey(Properties.Settings.Default.StopHotkey);
 
             SoundboardAudio.PlaybackStarted += StartPushToTalk;
             SoundboardAudio.PlaybackStopped += StopPushToTalk;
@@ -67,8 +69,15 @@ namespace VeSoundboard
             SoundboardAudio.InitDevices(primary.Guid, secondary.Guid);
         }
 
-        private void DeviceComboChanged(object sender, SelectionChangedEventArgs e)
+        private void DeviceComboChanged(object sender, EventArgs e)
         {
+            Properties.Settings.Default.PrimaryDevice = primaryDeviceCombo.SelectedIndex;
+            Properties.Settings.Default.SecondaryDevice = secondaryDeviceCombo.SelectedIndex;
+            Properties.Settings.Default.Save();
+
+            Console.WriteLine("Primary device index: " + Properties.Settings.Default.PrimaryDevice.ToString());
+            Console.WriteLine("Secondary device index: " + Properties.Settings.Default.SecondaryDevice.ToString());
+
             ChangeAudioDevices();
         }
 
@@ -99,7 +108,7 @@ namespace VeSoundboard
             }
 
             // Send key-down
-            inputSimulator.Keyboard.KeyDown((VirtualKeyCode)(int)pttKeybindBox.key);
+            inputSimulator.Keyboard.KeyDown((VirtualKeyCode)(int)pttKeybindBox.hotkey.key);
 
         }
 
@@ -110,7 +119,7 @@ namespace VeSoundboard
             Console.WriteLine("Stopping PTT.");
             
             // Send key-up
-            inputSimulator.Keyboard.KeyUp((VirtualKeyCode)(int)pttKeybindBox.key);
+            inputSimulator.Keyboard.KeyUp((VirtualKeyCode)(int)pttKeybindBox.hotkey.key);
         }
 
         private List<Process> GetWindowProcesses()
@@ -128,6 +137,18 @@ namespace VeSoundboard
         private void windowCombo_DropDownOpened(object sender, EventArgs e)
         {
             windowCombo.ItemsSource = GetWindowProcesses();
+        }
+
+        private void pttKeybindBox_KeybindSet()
+        {
+            Properties.Settings.Default.PTTHotkey = pttKeybindBox.hotkey;
+            Properties.Settings.Default.Save();
+        }
+
+        private void StopKeybindBox_KeybindSet()
+        {
+            Properties.Settings.Default.StopHotkey = StopKeybindBox.hotkey;
+            Properties.Settings.Default.Save();
         }
     }
 }
