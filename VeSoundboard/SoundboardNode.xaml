@@ -1,0 +1,32 @@
+﻿<UserControl x:Name="Node" x:Class="VeSoundboard.SoundboardNode"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VeSoundboard"
+             mc:Ignorable="d" d:DesignWidth="180.041" Width="100" Height="85" MouseEnter="OnMouseEnter" MouseLeave="OnMouseLeave">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="15"/>
+            <RowDefinition/>
+            <RowDefinition Height="23"/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="TopControls" Margin="0,0,0,0.2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="20"/>
+            </Grid.ColumnDefinitions>
+            <Rectangle Fill="{DynamicResource {x:Static SystemColors.MenuHighlightBrushKey}}" />
+            <Thumb x:Name="MoveHandle" Margin="0" DragDelta="OnDragDelta" BorderThickness="0" OpacityMask="Transparent"/>
+
+            <Button x:Name="button" Content="" Margin="0" Background="#FFFF5454" Grid.Column="1" Click="DeleteButton"/>
+        </Grid>
+        <Button x:Name="SoundButton" Margin="0" Grid.Row="1" Click="SoundButton_Clicked" Cursor="Hand">
+            <TextBlock Name="ButtonText" TextWrapping="Wrap">No Sound</TextBlock>
+        </Button>
+        <Grid x:Name ="BottomControls" Grid.Row="2">
+            <local:KeyBinderBox x:Name="KeybindBox" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" Height="Auto" GlobalKeybindPressed="KeybindBox_GlobalKeybindPressed"/>
+        </Grid>
+
+    </Grid>
+</UserControl>

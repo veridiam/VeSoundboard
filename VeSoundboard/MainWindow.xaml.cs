@@ -1,0 +1,133 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using NAudio.Wave;
+using WindowsInput;
+using WindowsInput.Native;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+namespace VeSoundboard
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private InputSimulator inputSimulator;
+        [DllImport("User32.dll")]
+        static extern int SetForegroundWindow(IntPtr point);
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            inputSimulator = new InputSimulator();
+            StopKeybindBox.globalKeybind = true;
+        }
+
+        private void OnLoad(object sender, RoutedEventArgs e)
+        {
+            primaryDeviceCombo.ItemsSource = DirectSoundOut.Devices;
+            primaryDeviceCombo.DisplayMemberPath = "Description";
+            primaryDeviceCombo.SelectedIndex = 0;
+
+            secondaryDeviceCombo.ItemsSource = DirectSoundOut.Devices;
+            secondaryDeviceCombo.DisplayMemberPath = "Description";
+            secondaryDeviceCombo.SelectedIndex = 0;
+
+            ChangeAudioDevices();
+            windowCombo.ItemsSource = GetWindowProcesses();
+            windowCombo.DisplayMemberPath = "MainWindowTitle";
+
+            SoundboardAudio.PlaybackStarted += StartPushToTalk;
+            SoundboardAudio.PlaybackStopped += StopPushToTalk;
+        }
+
+        private void ChangeAudioDevices()
+        {
+            DirectSoundDeviceInfo primary = (DirectSoundDeviceInfo)primaryDeviceCombo.SelectedValue;
+            DirectSoundDeviceInfo secondary = (DirectSoundDeviceInfo)secondaryDeviceCombo.SelectedValue;
+
+            if (primary == null || secondary == null) return;
+
+            Console.WriteLine("Primary device: " + primary.Description);
+            Console.WriteLine("Secondary device: " + secondary.Description);
+
+            SoundboardAudio.InitDevices(primary.Guid, secondary.Guid);
+        }
+
+        private void DeviceComboChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ChangeAudioDevices();
+        }
+
+        private void StopSoundButton_Click(object sender, RoutedEventArgs e)
+        {
+            SoundboardAudio.StopAllAudio();
+        }
+
+        private void StopKeybindBox_GlobalKeybindPressed()
+        {
+            SoundboardAudio.StopAllAudio();
+        }
+
+        private void StartPushToTalk()
+        {
+            if (!PTTCheckBox.IsChecked.Value || !pttKeybindBox.GetIsBound() ) return;
+            Console.WriteLine("Starting PTT.");
+            
+            // Set window focus
+            if (PTTFocusCheckBox.IsChecked.Value && windowCombo.SelectedValue != null)
+            {
+                Process p = (Process)windowCombo.SelectedValue;
+                if (p != null)
+                {
+                    Console.WriteLine("Setting focus to window: " + p.MainWindowTitle);
+                    SetForegroundWindow(p.MainWindowHandle);
+                }
+            }
+
+            // Send key-down
+            inputSimulator.Keyboard.KeyDown((VirtualKeyCode)(int)pttKeybindBox.key);
+
+        }
+
+        private void StopPushToTalk()
+        {
+            if (!PTTCheckBox.IsChecked.Value || !pttKeybindBox.GetIsBound()) return;
+
+            Console.WriteLine("Stopping PTT.");
+            
+            // Send key-up
+            inputSimulator.Keyboard.KeyUp((VirtualKeyCode)(int)pttKeybindBox.key);
+        }
+
+        private List<Process> GetWindowProcesses()
+        {
+            List<Process> processes = new List<Process>(Process.GetProcesses());
+
+            processes.RemoveAll((Process p) =>
+           {
+               return (p.MainWindowTitle == null || p.MainWindowTitle == "");
+           });
+
+            return processes;
+        }
+
+        private void windowCombo_DropDownOpened(object sender, EventArgs e)
+        {
+            windowCombo.ItemsSource = GetWindowProcesses();
+        }
+    }
+}
