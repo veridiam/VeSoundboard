@@ -56,6 +56,9 @@ namespace VeSoundboard
             double left = Canvas.GetLeft(this) + e.HorizontalChange;
             double top = Canvas.GetTop(this) + e.VerticalChange;
 
+            left = Math.Round(left / 5.0d) * 5.0d;
+            top = Math.Round(top / 5.0d) * 5.0d;
+
             Canvas.SetLeft(this, left);
             Canvas.SetTop(this, top);
         }

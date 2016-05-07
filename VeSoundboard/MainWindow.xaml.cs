@@ -33,16 +33,19 @@ namespace VeSoundboard
         {
             InitializeComponent();
             inputSimulator = new InputSimulator();
-            StopKeybindBox.globalKeybind = true;
+            
         }
 
         private void OnLoad(object sender, RoutedEventArgs e)
         {
-            primaryDeviceCombo.ItemsSource = DirectSoundOut.Devices;
-            primaryDeviceCombo.DisplayMemberPath = "Description";
+            List<WaveOutCapabilities> devices = new List<WaveOutCapabilities>();
+            for (int i = 0; i < WaveOut.DeviceCount; i++)
+                devices.Add(WaveOut.GetCapabilities(i));
+            primaryDeviceCombo.ItemsSource = devices;
+            primaryDeviceCombo.DisplayMemberPath = "ProductName";
             primaryDeviceCombo.SelectedIndex = Properties.Settings.Default.PrimaryDevice;
-            secondaryDeviceCombo.ItemsSource = DirectSoundOut.Devices;
-            secondaryDeviceCombo.DisplayMemberPath = "Description";
+            secondaryDeviceCombo.ItemsSource = devices;
+            secondaryDeviceCombo.DisplayMemberPath = "ProductName";
             secondaryDeviceCombo.SelectedIndex = Properties.Settings.Default.SecondaryDevice;
             ChangeAudioDevices();
 
@@ -50,6 +53,7 @@ namespace VeSoundboard
             windowCombo.DisplayMemberPath = "MainWindowTitle";
 
             pttKeybindBox.SetHotkey(Properties.Settings.Default.PTTHotkey);
+            StopKeybindBox.globalKeybind = true;
             StopKeybindBox.SetHotkey(Properties.Settings.Default.StopHotkey);
 
             SoundboardAudio.PlaybackStarted += StartPushToTalk;
@@ -58,15 +62,7 @@ namespace VeSoundboard
 
         private void ChangeAudioDevices()
         {
-            DirectSoundDeviceInfo primary = (DirectSoundDeviceInfo)primaryDeviceCombo.SelectedValue;
-            DirectSoundDeviceInfo secondary = (DirectSoundDeviceInfo)secondaryDeviceCombo.SelectedValue;
-
-            if (primary == null || secondary == null) return;
-
-            Console.WriteLine("Primary device: " + primary.Description);
-            Console.WriteLine("Secondary device: " + secondary.Description);
-
-            SoundboardAudio.InitDevices(primary.Guid, secondary.Guid);
+            SoundboardAudio.InitDevices(primaryDeviceCombo.SelectedIndex, secondaryDeviceCombo.SelectedIndex);
         }
 
         private void DeviceComboChanged(object sender, EventArgs e)

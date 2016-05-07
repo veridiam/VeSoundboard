@@ -44,6 +44,7 @@ namespace VeSoundboard
         public KeyBinderBox()
         {
             InitializeComponent();
+            HOTKEY_ID = GetHashCode();
             hotkey = new Hotkey();
         }
 
@@ -92,6 +93,7 @@ namespace VeSoundboard
 
         public void SetHotkey(Hotkey hk)
         {
+            if (hk == null) return;
             // Set keybinding
             hotkey = hk;
             Console.WriteLine("Set keybind to " + hk.modifiers.ToString() + " " + hk.key.ToString());
@@ -149,9 +151,12 @@ namespace VeSoundboard
 
         private void RegisterGlobalHotkey()
         {
+            
             UnregisterGlobalHotkey();
             var helper = new WindowInteropHelper(Window.GetWindow(this));
-            RegisterHotKey(helper.Handle, HOTKEY_ID, (uint)hotkey.modifiers, (uint)hotkey.key);
+            RegisterHotKey(helper.Handle, HOTKEY_ID, (uint)hotkey.modifiers | 0x4000, (uint)hotkey.key);
+
+            Console.WriteLine("Registering global keybind: " + hotkey.modifiers.ToString() + " " + hotkey.key.ToString());
         }
 
         public void UnregisterGlobalHotkey()
@@ -180,7 +185,7 @@ namespace VeSoundboard
 
         private void baseKeyBinderBox_Loaded(object sender, RoutedEventArgs e)
         {
-            HOTKEY_ID = GetHashCode();
+            
             var helper = new WindowInteropHelper(Window.GetWindow(this));
             source = HwndSource.FromHwnd(helper.Handle);
             source.AddHook(HwndHook);

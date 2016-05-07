@@ -8,34 +8,36 @@ namespace VeSoundboard
 {
     public static class SoundboardAudio
     {
-        static DirectSoundOut primaryOutput;
-        static DirectSoundOut secondaryOutput;
-        static Guid primaryDeviceGuid;
-        static Guid secondaryDeviceGuid;
+        static WaveOutEvent primaryOutput;
+        static WaveOutEvent secondaryOutput;
+        static int primaryDevice;
+        static int secondaryDevice;
 
         public delegate void OnPlaybackStarted();
         public static OnPlaybackStarted PlaybackStarted;
         public delegate void OnPlaybackStopped();
         public static OnPlaybackStopped PlaybackStopped;
 
-        public static void InitDevices(Guid primaryGuid, Guid secondaryGuid)
+        public static void InitDevices(int primaryDevice, int secondaryDevice)
         {
             if (primaryOutput != null)
             {
                 primaryOutput.Stop();
                 primaryOutput.Dispose();
             }
-            primaryOutput = new DirectSoundOut(primaryGuid, 80);
+            primaryOutput = new WaveOutEvent();
+            SoundboardAudio.primaryDevice = primaryDevice;
+            primaryOutput.DeviceNumber = primaryDevice;
             primaryOutput.PlaybackStopped += TriggerStopEvent;
-            primaryDeviceGuid = primaryGuid;
 
             if (secondaryOutput != null)
             {
                 secondaryOutput.Stop();
                 secondaryOutput.Dispose();
             }
-            secondaryOutput = new DirectSoundOut(secondaryGuid, 80);
-            secondaryDeviceGuid = secondaryGuid;
+            secondaryOutput = new WaveOutEvent();
+            secondaryOutput.DeviceNumber = secondaryDevice;
+            SoundboardAudio.secondaryDevice = secondaryDevice;
         }
 
         public static void PlayAudio(string filename)
@@ -45,17 +47,20 @@ namespace VeSoundboard
                 primaryOutput.Stop();
                 primaryOutput.Dispose();
             }
-            primaryOutput = new DirectSoundOut(primaryDeviceGuid, 80);
+            primaryOutput = new WaveOutEvent();
+            primaryOutput.DeviceNumber = primaryDevice;
+            primaryOutput.PlaybackStopped += TriggerStopEvent;
             AudioFileReader reader1 = new AudioFileReader(filename);
             primaryOutput.Init(reader1);
-            if (secondaryDeviceGuid != primaryDeviceGuid)
+            if (primaryDevice != secondaryDevice)
             {
                 if (secondaryOutput != null)
                 {
                     secondaryOutput.Stop();
                     secondaryOutput.Dispose();
                 }
-                secondaryOutput = new DirectSoundOut(secondaryDeviceGuid, 80);
+                secondaryOutput = new WaveOutEvent();
+                secondaryOutput.DeviceNumber = secondaryDevice;
                 AudioFileReader reader2 = new AudioFileReader(filename);
                 secondaryOutput.Init(reader2);
                 secondaryOutput.Play();
@@ -63,7 +68,8 @@ namespace VeSoundboard
 
             if(primaryOutput.PlaybackState != PlaybackState.Playing)
             {
-                PlaybackStarted.Invoke();
+                if (PlaybackStarted != null)
+                    PlaybackStarted.Invoke();
             }
 
             primaryOutput.Play();
