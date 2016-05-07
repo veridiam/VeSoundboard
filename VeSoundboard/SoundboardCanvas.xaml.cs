@@ -59,7 +59,8 @@ namespace VeSoundboard
             Canvas.SetTop(node, location.Y);
             BaseCanvas.Children.Add(node);
 
-            
+            if (dragInstructionLabel.Visibility == Visibility.Visible)
+                dragInstructionLabel.Visibility = Visibility.Hidden;
         }
 
         private bool GetSoundPath(out string filename, DragEventArgs e)

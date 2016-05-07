@@ -13,13 +13,43 @@
             <ColumnDefinition Width="200"/>
         </Grid.ColumnDefinitions>
         <TabControl x:Name="tabControl" Margin="0">
-            <TabItem Header="TabItem">
+            <TabItem Header="Page1">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <ScrollViewer PanningMode="Both" HorizontalScrollBarVisibility="Auto" Margin="0" VerticalScrollBarVisibility="Auto">
                         <local:SoundboardCanvas x:Name="SoundCanvas" Margin="0" MinWidth="500" MinHeight="500" Width="4000" Height="3000"/>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Page2" Margin="-2,-2,-2,-1">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ScrollViewer PanningMode="Both" HorizontalScrollBarVisibility="Auto" Margin="0" VerticalScrollBarVisibility="Auto">
+                        <local:SoundboardCanvas x:Name="SoundCanvas1" Margin="0" MinWidth="500" MinHeight="500" Width="4000" Height="3000"/>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Page3" Margin="-2,-2,-2,-1">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ScrollViewer PanningMode="Both" HorizontalScrollBarVisibility="Auto" Margin="0" VerticalScrollBarVisibility="Auto">
+                        <local:SoundboardCanvas x:Name="SoundCanvas2" Margin="0" MinWidth="500" MinHeight="500" Width="4000" Height="3000"/>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Page4" Margin="-2,-2,-2,-1">
+                <Grid Background="#FFE5E5E5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <ScrollViewer PanningMode="Both" HorizontalScrollBarVisibility="Auto" Margin="0" VerticalScrollBarVisibility="Auto">
+                        <local:SoundboardCanvas x:Name="SoundCanvas3" Margin="0" MinWidth="500" MinHeight="500" Width="4000" Height="3000"/>
                     </ScrollViewer>
                 </Grid>
             </TabItem>

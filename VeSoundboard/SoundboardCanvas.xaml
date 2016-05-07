@@ -6,5 +6,7 @@
              xmlns:local="clr-namespace:VeSoundboard"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Canvas x:Name="BaseCanvas" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" AllowDrop="True" DragEnter="BaseCanvas_DragEnter" DragLeave="BaseCanvas_DragLeave" Drop="BaseCanvas_Drop"/>
+    <Canvas x:Name="BaseCanvas" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" AllowDrop="True" DragEnter="BaseCanvas_DragEnter" DragLeave="BaseCanvas_DragLeave" Drop="BaseCanvas_Drop">
+        <Label x:Name="dragInstructionLabel" Content="Drag audio files here." Foreground="#FF7E7E7E" Canvas.Left="10" Canvas.Top="10"/>
+    </Canvas>
 </UserControl>
