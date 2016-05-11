@@ -82,6 +82,11 @@ namespace VeSoundboard
             if (FileList.Length > 0)
             {
                 filename = FileList[0];
+                // TODO: Use relative paths
+                //Uri u = new Uri(@filename);
+                //u = u.MakeRelativeUri(new Uri(@Directory.GetCurrentDirectory()));
+                //filename = u.ToString();
+
                 string ext = Path.GetExtension(filename).ToLower();
                 if (ext == ".wav" || ext == ".mp3")
                     valid = true;
@@ -121,8 +126,9 @@ namespace VeSoundboard
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            loaded = true;
+            
             LoadNodes();
+            loaded = true;
         }
     }
 }

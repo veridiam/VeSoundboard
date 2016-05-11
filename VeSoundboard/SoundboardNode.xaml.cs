@@ -93,6 +93,10 @@ namespace VeSoundboard
 
             loaded = true;
             KeybindBox.SetHotkey(item.hotkey);
+
+            TopControls.OpacityMask = Brushes.Transparent;
+            if (KeybindBox.hotkey.key == Keys.None && !KeybindBox.isSetting)
+                BottomControls.OpacityMask = Brushes.Transparent;
         }
 
         private void KeybindBox_KeybindSet()
