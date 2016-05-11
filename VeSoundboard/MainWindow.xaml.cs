@@ -1,22 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.IO;
 using NAudio.Wave;
 using WindowsInput;
 using WindowsInput.Native;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace VeSoundboard
 {
@@ -29,35 +22,102 @@ namespace VeSoundboard
         [DllImport("User32.dll")]
         static extern int SetForegroundWindow(IntPtr point);
 
+        protected const string dataFilename = "soundboard.dat_storm";
+        
+        private static List<SoundboardPageInfo> savedData;
+
         public MainWindow()
         {
             InitializeComponent();
             inputSimulator = new InputSimulator();
-            
+        }
+
+        public void LoadData()
+        {
+            try
+            {
+                using (Stream stream = File.Open(dataFilename, FileMode.Open))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    savedData = (List<SoundboardPageInfo>)formatter.Deserialize(stream);
+                    stream.Close();
+                    Console.WriteLine("Loading successful.");
+                }
+            } catch (FileNotFoundException e)
+            {
+                Console.WriteLine("File not found, creating new data.");
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            if (savedData == null) savedData = new List<SoundboardPageInfo>();
+
+            if (savedData.Count < 1)
+            {
+                savedData.Add(new SoundboardPageInfo());
+            }
+
+            foreach (SoundboardPageInfo info in savedData)
+            {
+                TabItem t = new TabItem();
+                t.Header = info.name;
+                tabControl.Items.Add(t);
+                SoundboardCanvas canvas = new SoundboardCanvas(info);
+                t.Content = canvas;
+            }
+
+            tabControl.SelectedIndex = 0;
+            SetupPageNameTextBox();
+        }
+
+        private void SetupPageNameTextBox()
+        {
+            TabItem t = (TabItem)tabControl.SelectedItem;
+
+            if (t != null)
+            {
+                pageNameTextBox.Text = (string)t.Header;
+            }
         }
 
         private void OnLoad(object sender, RoutedEventArgs e)
         {
-            List<WaveOutCapabilities> devices = new List<WaveOutCapabilities>();
-            for (int i = 0; i < WaveOut.DeviceCount; i++)
-                devices.Add(WaveOut.GetCapabilities(i));
-            primaryDeviceCombo.ItemsSource = devices;
-            primaryDeviceCombo.DisplayMemberPath = "ProductName";
-            primaryDeviceCombo.SelectedIndex = Properties.Settings.Default.PrimaryDevice;
-            secondaryDeviceCombo.ItemsSource = devices;
-            secondaryDeviceCombo.DisplayMemberPath = "ProductName";
-            secondaryDeviceCombo.SelectedIndex = Properties.Settings.Default.SecondaryDevice;
-            ChangeAudioDevices();
+            try
+            {
+                // Set up audio device combo boxes
+                List<WaveOutCapabilities> devices = new List<WaveOutCapabilities>();
+                for (int i = 0; i < WaveOut.DeviceCount; i++)
+                    devices.Add(WaveOut.GetCapabilities(i));
+                primaryDeviceCombo.ItemsSource = devices;
+                primaryDeviceCombo.DisplayMemberPath = "ProductName";
+                primaryDeviceCombo.SelectedIndex = Properties.Settings.Default.PrimaryDevice;
+                secondaryDeviceCombo.ItemsSource = devices;
+                secondaryDeviceCombo.DisplayMemberPath = "ProductName";
+                secondaryDeviceCombo.SelectedIndex = Properties.Settings.Default.SecondaryDevice;
+                ChangeAudioDevices();
+            
+                // Set up window focus combo box
+                windowCombo.ItemsSource = GetWindowProcesses();
+                windowCombo.DisplayMemberPath = "MainWindowTitle";
+           
+                // Load saved keybinds
+                pttKeybindBox.SetHotkey(Properties.Settings.Default.PTTHotkey);
+                StopKeybindBox.globalKeybind = true;
+                StopKeybindBox.SetHotkey(Properties.Settings.Default.StopHotkey);
 
-            windowCombo.ItemsSource = GetWindowProcesses();
-            windowCombo.DisplayMemberPath = "MainWindowTitle";
+                // Setup callbacks
+                SoundboardAudio.PlaybackStarted += StartPushToTalk;
+                SoundboardAudio.PlaybackStopped += StopPushToTalk;
 
-            pttKeybindBox.SetHotkey(Properties.Settings.Default.PTTHotkey);
-            StopKeybindBox.globalKeybind = true;
-            StopKeybindBox.SetHotkey(Properties.Settings.Default.StopHotkey);
+                // Load saved pages
+                LoadData();
 
-            SoundboardAudio.PlaybackStarted += StartPushToTalk;
-            SoundboardAudio.PlaybackStopped += StopPushToTalk;
+            } catch (Exception ex)
+            {
+                Console.WriteLine("Error loading.");
+                Console.WriteLine(ex.Message);
+            }
         }
 
         private void ChangeAudioDevices()
@@ -145,6 +205,113 @@ namespace VeSoundboard
         {
             Properties.Settings.Default.StopHotkey = StopKeybindBox.hotkey;
             Properties.Settings.Default.Save();
+        }
+
+        public static void SaveData()
+        {
+            Console.WriteLine("Saving data.");
+            try
+            {
+                using (Stream stream = File.Open(dataFilename, FileMode.Create))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(stream, savedData);
+                    stream.Close();
+                }
+            } catch (Exception ex)
+            {
+                Console.WriteLine("Problem writing saved data.");
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private void MainWindowElement_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            SaveData();
+        }
+
+        private void TabCreateClicked(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Console.WriteLine("Tab area clicked.");
+        }
+
+        private void newPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            SoundboardPageInfo info = new SoundboardPageInfo();
+            savedData.Add(info);
+
+            SoundboardCanvas canvas = new SoundboardCanvas(info);
+            TabItem t = new TabItem();
+            t.Content = canvas;
+            t.Header = info.name;
+            tabControl.Items.Add(t);
+            tabControl.SelectedItem = t;
+
+            SaveData();
+        }
+
+        private void deletePageButton_Click(object sender, RoutedEventArgs e)
+        {
+            TabItem t = (TabItem)tabControl.SelectedItem;
+
+            if (t != null)
+            {
+                if (tabControl.Items.Count > 1)
+                {
+                    tabControl.SelectedIndex--;
+                }
+                
+                SoundboardCanvas canvas = (SoundboardCanvas)t.Content;
+                if (canvas != null)
+                {
+                    canvas.Destroy();
+                    savedData.Remove(canvas.pageInfo);
+                }
+
+                tabControl.Items.Remove(t);
+
+                if (tabControl.Items.Count == 0)
+                {
+                    newPageButton_Click(sender, e);
+                }
+
+                SaveData();
+            }
+        }
+
+        private void SetPageName()
+        {
+            TabItem t = (TabItem)tabControl.SelectedItem;
+
+            if (t != null)
+            {
+                SoundboardCanvas canvas = (SoundboardCanvas)t.Content;
+                if (canvas != null)
+                {
+                    canvas.pageInfo.name = pageNameTextBox.Text;
+
+                    t.Header = canvas.pageInfo.name;
+                    SaveData();
+                }
+            }
+        }
+
+        private void pageNameTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SetPageName();
+        }
+
+        private void pageNameTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                SetPageName();
+            }
+        }
+
+        private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SetupPageNameTextBox();
         }
     }
 }

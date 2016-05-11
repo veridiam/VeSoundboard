@@ -75,12 +75,14 @@
     </Compile>
     <Compile Include="Keys.cs" />
     <Compile Include="SoundboardAudio.cs" />
+    <Compile Include="SoundboardItem.cs" />
     <Compile Include="SoundboardNode.xaml.cs">
       <DependentUpon>SoundboardNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="SoundboardCanvas.xaml.cs">
       <DependentUpon>SoundboardCanvas.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SoundboardPageInfo.cs" />
     <Page Include="KeyBinderBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

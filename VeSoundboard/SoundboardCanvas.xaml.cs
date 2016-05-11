@@ -20,9 +20,13 @@ namespace VeSoundboard
     /// </summary>
     public partial class SoundboardCanvas : UserControl
     {
-        public SoundboardCanvas()
+        public SoundboardPageInfo pageInfo;
+        private bool loaded = false;
+
+        public SoundboardCanvas(SoundboardPageInfo info)
         {
             InitializeComponent();
+            pageInfo = info;
         }
 
         private void BaseCanvas_DragEnter(object sender, DragEventArgs e)
@@ -46,21 +50,28 @@ namespace VeSoundboard
 
         private void BaseCanvas_Drop(object sender, DragEventArgs e)
         {
+            try
+            {
+                string filename;
+                bool isValid = GetSoundPath(out filename, e);
+                if (!isValid) throw new Exception("Invalid file type.");
 
-            string filename;
-            bool isValid = GetSoundPath(out filename, e);
-            if (!isValid) return;
+                Console.WriteLine("Added " + filename);
 
-            Console.WriteLine("Added " + filename);
+                SoundboardItem item = new SoundboardItem(filename, e.GetPosition(BaseCanvas));
+                pageInfo.items.Add(item);
+                SoundboardNode node = new SoundboardNode(item, pageInfo);
+                BaseCanvas.Children.Add(node);
+                node.SetPosition();
 
-            SoundboardNode node = new SoundboardNode(filename);
-            Point location = e.GetPosition(BaseCanvas);
-            Canvas.SetLeft(node, location.X);
-            Canvas.SetTop(node, location.Y);
-            BaseCanvas.Children.Add(node);
+                MainWindow.SaveData();
 
-            if (dragInstructionLabel.Visibility == Visibility.Visible)
-                dragInstructionLabel.Visibility = Visibility.Hidden;
+                if (dragInstructionLabel.Visibility == Visibility.Visible)
+                    dragInstructionLabel.Visibility = Visibility.Hidden;
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         private bool GetSoundPath(out string filename, DragEventArgs e)
@@ -76,6 +87,42 @@ namespace VeSoundboard
                     valid = true;
             }
             return valid;
+        }
+
+        public void LoadNodes()
+        {
+            if (loaded) return;
+
+            if (pageInfo.items.Count > 0) dragInstructionLabel.Visibility = Visibility.Hidden;
+            foreach(SoundboardItem i in pageInfo.items)
+            {
+                Console.WriteLine("Adding node " + i.filename);
+                SoundboardNode node = new SoundboardNode(i, pageInfo);
+                BaseCanvas.Children.Add(node);
+                node.SetPosition();
+            }
+        }
+
+        public void Destroy()
+        {
+            for(int i = 0; i < BaseCanvas.Children.Count; i++)
+                {
+                    try
+                    {
+                        SoundboardNode n = (SoundboardNode)BaseCanvas.Children[i];
+                        n.Destroy();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Do nothing
+                    }
+                }
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            loaded = true;
+            LoadNodes();
         }
     }
 }

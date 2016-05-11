@@ -5,8 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:VeSoundboard"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <Canvas x:Name="BaseCanvas" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" AllowDrop="True" DragEnter="BaseCanvas_DragEnter" DragLeave="BaseCanvas_DragLeave" Drop="BaseCanvas_Drop">
-        <Label x:Name="dragInstructionLabel" Content="Drag audio files here." Foreground="#FF7E7E7E" Canvas.Left="10" Canvas.Top="10"/>
+             d:DesignHeight="300" d:DesignWidth="300" Loaded="UserControl_Loaded">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+    <Canvas x:Name="BaseCanvas" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" AllowDrop="True" DragEnter="BaseCanvas_DragEnter" DragLeave="BaseCanvas_DragLeave" Drop="BaseCanvas_Drop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="4000" Height="2000">
+        <Label x:Name="dragInstructionLabel" Content="Drag audio files here." Foreground="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Canvas.Left="10" Canvas.Top="10"/>
     </Canvas>
+    </ScrollViewer>
 </UserControl>

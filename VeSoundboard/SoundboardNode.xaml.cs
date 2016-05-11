@@ -21,21 +21,23 @@ namespace VeSoundboard
     /// </summary>
     public partial class SoundboardNode : UserControl
     {
-        protected string filepath;
+        protected SoundboardItem item;
+        protected SoundboardPageInfo pageInfo;
+        private bool loaded = false;
 
-        public SoundboardNode()
+        public SoundboardNode(SoundboardItem item, SoundboardPageInfo info)
         {
             InitializeComponent();
-            KeybindBox.globalKeybind = true;    
+            this.item = item;
+            ButtonText.Text = System.IO.Path.GetFileNameWithoutExtension(item.filename);
+            KeybindBox.globalKeybind = true;
+            pageInfo = info;
         }
 
-        public SoundboardNode(string filepath)
+        public void SetPosition()
         {
-            InitializeComponent();
-
-            this.filepath = filepath;
-            ButtonText.Text = System.IO.Path.GetFileNameWithoutExtension(filepath);
-            KeybindBox.globalKeybind = true;
+            Canvas.SetLeft(this, item.location.X);
+            Canvas.SetTop(this, item.location.Y);
         }
 
         private void OnMouseEnter(object sender, MouseEventArgs e)
@@ -65,28 +67,56 @@ namespace VeSoundboard
 
         private void DeleteButton(object sender, RoutedEventArgs e)
         {
+            Destroy();
+            MainWindow.SaveData();
+        }
+
+        private void SoundButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (item.filename != null)
+            {
+                SoundboardAudio.PlayAudio(item.filename);
+            }
+        }
+
+        private void KeybindBox_GlobalKeybindPressed()
+        {
+            if (item.filename != null)
+            {
+                SoundboardAudio.PlayAudio(item.filename);
+            }
+        }
+
+        private void Node_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (loaded) return;
+
+            loaded = true;
+            KeybindBox.SetHotkey(item.hotkey);
+        }
+
+        private void KeybindBox_KeybindSet()
+        {
+            item.hotkey = KeybindBox.hotkey;
+        }
+
+        private void MoveHandle_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            item.location.X = Canvas.GetLeft(this);
+            item.location.Y = Canvas.GetTop(this);
+
+            MainWindow.SaveData();
+        }
+
+        public void Destroy()
+        {
             KeybindBox.SetHotkey(new Hotkey());
             KeybindBox.UnregisterGlobalHotkey();
             if (Parent == null) return;
             Panel p = (Panel)Parent;
 
             p.Children.Remove(this);
-        }
-
-        private void SoundButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            if (filepath != null)
-            {
-                SoundboardAudio.PlayAudio(filepath);
-            }
-        }
-
-        private void KeybindBox_GlobalKeybindPressed()
-        {
-            if (filepath != null)
-            {
-                SoundboardAudio.PlayAudio(filepath);
-            }
+            pageInfo.items.Remove(item);
         }
     }
 }
