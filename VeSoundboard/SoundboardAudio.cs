@@ -13,6 +13,9 @@ namespace VeSoundboard
     private readonly WaveOutEvent primaryOutput;
     private readonly WaveOutEvent secondaryOutput;
 
+    private int primaryDevice = 0;
+    private int secondaryDevice = 0;
+
     private MixingSampleProvider mixer_one;
     private MixingSampleProvider mixer_two;
 
@@ -44,6 +47,9 @@ namespace VeSoundboard
 
     public void InitDevices(int primaryDevice, int secondaryDevice)
     {
+      this.primaryDevice = primaryDevice;
+      this.secondaryDevice = secondaryDevice;
+
       if (primaryOutput != null)
       {
         primaryOutput.Stop();
@@ -91,11 +97,10 @@ namespace VeSoundboard
 
       if (PlaybackStarted != null)
         PlaybackStarted.Invoke();
-
-      if (primaryOutput.PlaybackState != PlaybackState.Playing)
-        primaryOutput.Play();
-
-      if (secondaryOutput.PlaybackState != PlaybackState.Playing)
+      
+      primaryOutput.Play();
+      
+      if (primaryDevice != secondaryDevice)
         secondaryOutput.Play();
     }
 
