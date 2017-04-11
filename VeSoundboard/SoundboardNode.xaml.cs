@@ -127,10 +127,12 @@ namespace VeSoundboard
     {
       string defaultText = item.text;
       string text = Microsoft.VisualBasic.Interaction.InputBox("Change Text", "Change Text", defaultText);
-
-      item.text = text;
-      MainWindow.SaveData();
-      ButtonText.Text = text;
+      if (!string.IsNullOrEmpty(text))
+      {
+        item.text = text;
+        MainWindow.SaveData();
+        ButtonText.Text = text;
+      }
     }
   }
 }
