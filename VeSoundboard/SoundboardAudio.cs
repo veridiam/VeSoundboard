@@ -103,6 +103,9 @@ namespace VeSoundboard
     {
       mixer_one.RemoveAllMixerInputs();
       mixer_two.RemoveAllMixerInputs();
+
+      primaryOutput.Stop();
+      secondaryOutput.Stop();
     }
 
     public void Dispose()
