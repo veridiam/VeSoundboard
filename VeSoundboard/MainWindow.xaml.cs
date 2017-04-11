@@ -164,7 +164,7 @@ namespace VeSoundboard
       SoundboardAudio.instance.PlaybackStopped += StopPushToTalk;
     }
 
-    private void UpdateSoundboardUI()
+    public void UpdateSoundboardUI()
     {
       tabControl.Items.Clear();
       foreach (SoundboardPageInfo info in loadedData)

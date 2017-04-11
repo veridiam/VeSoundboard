@@ -23,6 +23,11 @@
         </Grid>
         <Button x:Name="SoundButton" Margin="0" Grid.Row="1" Click="SoundButton_Clicked" Cursor="Hand">
             <TextBlock Name="ButtonText" TextWrapping="Wrap">No Sound</TextBlock>
+      <Button.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Change Text..." Click="changeText_Click" />
+        </ContextMenu>
+      </Button.ContextMenu>
         </Button>
         <Grid x:Name ="BottomControls" Grid.Row="2">
             <local:KeyBinderBox x:Name="KeybindBox" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" Height="Auto" GlobalKeybindPressed="KeybindBox_GlobalKeybindPressed" KeybindSet="KeybindBox_KeybindSet"/>
