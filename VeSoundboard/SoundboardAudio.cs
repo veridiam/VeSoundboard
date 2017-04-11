@@ -13,8 +13,8 @@ namespace VeSoundboard
     private readonly WaveOutEvent primaryOutput;
     private readonly WaveOutEvent secondaryOutput;
 
-    private readonly MixingSampleProvider mixer_one;
-    private readonly MixingSampleProvider mixer_two;
+    private MixingSampleProvider mixer_one;
+    private MixingSampleProvider mixer_two;
 
     public static readonly SoundboardAudio instance = new SoundboardAudio();
 
@@ -70,12 +70,22 @@ namespace VeSoundboard
       ISampleProvider itemSampleProvider_one = new SoundboardItemSampleProvider(item);
       ISampleProvider itemSampleProvider_two = new SoundboardItemSampleProvider(item);
 
-      if (itemSampleProvider_one.WaveFormat.Channels == 1)
-      {
-        itemSampleProvider_one = new MonoToStereoSampleProvider(itemSampleProvider_one);
-        itemSampleProvider_two = new MonoToStereoSampleProvider(itemSampleProvider_two);
-      }
       StopAllAudio();
+      if (mixer_one.WaveFormat.Channels != item.waveFormat.Channels
+        || mixer_one.WaveFormat.SampleRate != item.waveFormat.SampleRate
+        )
+      {
+        mixer_one = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(item.waveFormat.SampleRate, item.waveFormat.Channels));
+        primaryOutput.Init(mixer_one);
+      }
+      if (mixer_two.WaveFormat.Channels != item.waveFormat.Channels
+        || mixer_two.WaveFormat.SampleRate != item.waveFormat.SampleRate
+        )
+      {
+        mixer_two = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(item.waveFormat.SampleRate, item.waveFormat.Channels));
+        secondaryOutput.Init(mixer_two);
+      }
+
       mixer_one.AddMixerInput(itemSampleProvider_one);
       mixer_two.AddMixerInput(itemSampleProvider_two);
 
