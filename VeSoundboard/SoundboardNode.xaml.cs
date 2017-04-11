@@ -29,7 +29,7 @@ namespace VeSoundboard
         {
             InitializeComponent();
             this.item = item;
-            ButtonText.Text = System.IO.Path.GetFileNameWithoutExtension(item.filename);
+            ButtonText.Text = item.text;
             KeybindBox.globalKeybind = true;
             pageInfo = info;
         }
@@ -73,17 +73,17 @@ namespace VeSoundboard
 
         private void SoundButton_Clicked(object sender, RoutedEventArgs e)
         {
-            if (item.filename != null)
+            if (item != null)
             {
-                SoundboardAudio.PlayAudio(item.filename);
+                SoundboardAudio.instance.PlayAudio(item);
             }
         }
 
         private void KeybindBox_GlobalKeybindPressed()
         {
-            if (item.filename != null)
+            if (item != null)
             {
-                SoundboardAudio.PlayAudio(item.filename);
+                SoundboardAudio.instance.PlayAudio(item);
             }
         }
 

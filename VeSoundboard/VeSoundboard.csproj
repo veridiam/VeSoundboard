@@ -76,6 +76,7 @@
     <Compile Include="Keys.cs" />
     <Compile Include="SoundboardAudio.cs" />
     <Compile Include="SoundboardItem.cs" />
+    <Compile Include="SoundboardItemSampleProvider.cs" />
     <Compile Include="SoundboardNode.xaml.cs">
       <DependentUpon>SoundboardNode.xaml</DependentUpon>
     </Compile>

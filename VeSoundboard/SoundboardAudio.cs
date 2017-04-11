@@ -3,87 +3,102 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NAudio;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using System.Threading;
 
 namespace VeSoundboard
 {
-    public static class SoundboardAudio
+  public class SoundboardAudio : IDisposable
+  {
+    private readonly WaveOutEvent primaryOutput;
+    private readonly WaveOutEvent secondaryOutput;
+
+    private readonly MixingSampleProvider mixer_one;
+    private readonly MixingSampleProvider mixer_two;
+
+    public static readonly SoundboardAudio instance = new SoundboardAudio();
+
+    public delegate void OnPlaybackStarted();
+    public OnPlaybackStarted PlaybackStarted;
+    public delegate void OnPlaybackStopped();
+    public OnPlaybackStopped PlaybackStopped;
+
+    public SoundboardAudio()
     {
-        static WaveOutEvent primaryOutput;
-        static WaveOutEvent secondaryOutput;
-        static int primaryDevice;
-        static int secondaryDevice;
+      primaryOutput = new WaveOutEvent();
+      secondaryOutput = new WaveOutEvent();
 
-        public delegate void OnPlaybackStarted();
-        public static OnPlaybackStarted PlaybackStarted;
-        public delegate void OnPlaybackStopped();
-        public static OnPlaybackStopped PlaybackStopped;
+      primaryOutput.PlaybackStopped += (object sender, StoppedEventArgs args) =>
+      {
+        if (PlaybackStopped != null)
+          PlaybackStopped.Invoke();
+      };
 
-        public static void InitDevices(int primaryDevice, int secondaryDevice)
-        {
-            if (primaryOutput != null)
-            {
-                primaryOutput.Stop();
-                primaryOutput.Dispose();
-            }
-            primaryOutput = new WaveOutEvent();
-            SoundboardAudio.primaryDevice = primaryDevice;
-            primaryOutput.DeviceNumber = primaryDevice;
-            primaryOutput.PlaybackStopped += TriggerStopEvent;
+      mixer_one = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
+      //mixer_one.ReadFully = true;
 
-            if (secondaryOutput != null)
-            {
-                secondaryOutput.Stop();
-                secondaryOutput.Dispose();
-            }
-            secondaryOutput = new WaveOutEvent();
-            secondaryOutput.DeviceNumber = secondaryDevice;
-            SoundboardAudio.secondaryDevice = secondaryDevice;
-        }
+      mixer_two = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
+      //mixer_two.ReadFully = true;
 
-        public static void PlayAudio(string filename)
-        {
-            if (primaryOutput != null)
-            {
-                primaryOutput.Stop();
-                primaryOutput.Dispose();
-            }
-            primaryOutput = new WaveOutEvent();
-            primaryOutput.DeviceNumber = primaryDevice;
-            primaryOutput.PlaybackStopped += TriggerStopEvent;
-            AudioFileReader reader1 = new AudioFileReader(filename);
-            primaryOutput.Init(reader1);
-            if (primaryDevice != secondaryDevice)
-            {
-                if (secondaryOutput != null)
-                {
-                    secondaryOutput.Stop();
-                    secondaryOutput.Dispose();
-                }
-                secondaryOutput = new WaveOutEvent();
-                secondaryOutput.DeviceNumber = secondaryDevice;
-                AudioFileReader reader2 = new AudioFileReader(filename);
-                secondaryOutput.Init(reader2);
-                secondaryOutput.Play();
-            }
-
-            if(primaryOutput.PlaybackState != PlaybackState.Playing)
-            {
-                if (PlaybackStarted != null)
-                    PlaybackStarted.Invoke();
-            }
-
-            primaryOutput.Play();
-        }
-
-        public static void StopAllAudio()
-        {
-            if (primaryOutput != null) primaryOutput.Stop();
-            if (secondaryOutput != null) secondaryOutput.Stop();
-        }
-
-        private static void TriggerStopEvent(object sender, StoppedEventArgs args)
-        {
-            if (PlaybackStopped != null) PlaybackStopped.Invoke();
-        }
     }
+
+    public void InitDevices(int primaryDevice, int secondaryDevice)
+    {
+      if (primaryOutput != null)
+      {
+        primaryOutput.Stop();
+        primaryOutput.DeviceNumber = primaryDevice;
+        primaryOutput.Init(mixer_one);
+        //primaryOutput.Play();
+      }
+
+      if (secondaryOutput != null)
+      {
+        secondaryOutput.Stop();
+        if (primaryDevice != secondaryDevice)
+        {
+          secondaryOutput.DeviceNumber = secondaryDevice;
+          secondaryOutput.Init(mixer_two);
+          //secondaryOutput.Play();
+        }
+      }
+
+    }
+
+    public void PlayAudio(SoundboardItem item)
+    {
+      ISampleProvider itemSampleProvider_one = new SoundboardItemSampleProvider(item);
+      ISampleProvider itemSampleProvider_two = new SoundboardItemSampleProvider(item);
+
+      if (itemSampleProvider_one.WaveFormat.Channels == 1)
+      {
+        itemSampleProvider_one = new MonoToStereoSampleProvider(itemSampleProvider_one);
+        itemSampleProvider_two = new MonoToStereoSampleProvider(itemSampleProvider_two);
+      }
+      StopAllAudio();
+      mixer_one.AddMixerInput(itemSampleProvider_one);
+      mixer_two.AddMixerInput(itemSampleProvider_two);
+
+      if (PlaybackStarted != null)
+        PlaybackStarted.Invoke();
+
+      if (primaryOutput.PlaybackState != PlaybackState.Playing)
+        primaryOutput.Play();
+
+      if (secondaryOutput.PlaybackState != PlaybackState.Playing)
+        secondaryOutput.Play();
+    }
+
+    public void StopAllAudio()
+    {
+      mixer_one.RemoveAllMixerInputs();
+      mixer_two.RemoveAllMixerInputs();
+    }
+
+    public void Dispose()
+    {
+      primaryOutput.Dispose();
+      secondaryOutput.Dispose();
+    }
+  }
 }
