@@ -59,6 +59,7 @@ namespace VeSoundboard
       }
 
       InitializeComponent();
+      Title = Path.GetFileName(currentSaveDataLocation);
       inputSimulator = new InputSimulator();
     }
 
@@ -102,6 +103,7 @@ namespace VeSoundboard
       if (result == true)
       {
         currentSaveDataLocation = dlg.FileName;
+        Title = Path.GetFileName(currentSaveDataLocation);
         SaveData();
       }
     }
@@ -117,6 +119,7 @@ namespace VeSoundboard
         if (LoadData(dlg.FileName))
         {
           currentSaveDataLocation = dlg.FileName;
+          Title = Path.GetFileName(currentSaveDataLocation);
           UpdateSoundboardUI();
           return true;
         }
@@ -137,7 +140,7 @@ namespace VeSoundboard
     private void OnLoad(object sender, RoutedEventArgs e)
     {
       UpdateSoundboardUI();
-      
+
 
       // Set up audio device combo boxes
       List<WaveOutCapabilities> devices = new List<WaveOutCapabilities>();
